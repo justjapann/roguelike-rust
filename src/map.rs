@@ -3,6 +3,10 @@ use rltk::{Algorithm2D, BaseMap, Point, RandomNumberGenerator, Rltk, RGB};
 use specs::prelude::*;
 use std::cmp::{max, min};
 
+const MAPWIDTH: usize = 80;
+const MAPHEIGHT: usize = 43;
+const MAPCOUNT: usize = MAPHEIGHT * MAPWIDTH;
+
 #[derive(PartialEq, Copy, Clone)]
 pub enum TileType {
     Wall,
@@ -22,18 +26,6 @@ pub struct Map {
 }
 
 impl Map {
-    pub fn clear_content_index(&mut self) {
-        for content in self.tile_content.iter_mut() {
-            content.clear();
-        }
-    }
-
-    pub fn populate_blocked(&mut self) {
-        for (i, tile) in self.tiles.iter_mut().enumerate() {
-            self.blocked[i] = *tile == TileType::Wall;
-        }
-    }
-
     pub fn xy_idx(&self, x: i32, y: i32) -> usize {
         (y as usize * self.width as usize) + x as usize
     }
@@ -73,52 +65,30 @@ impl Map {
         !self.blocked[idx]
     }
 
-    fn get_available_exits(&self, idx: usize) -> rltk::SmallVec<[(usize, f32); 10]> {
-        let mut exits = rltk::SmallVec::new();
-        let x = idx as i32 % self.width;
-        let y = idx as i32 / self.width;
-        let w = self.width as usize;
-        // Cardinal directions
-        if self.is_exit_valid(x - 1, y) {
-            exits.push((idx - 1, 1.0))
-        };
-        if self.is_exit_valid(x + 1, y) {
-            exits.push((idx + 1, 1.0))
-        };
-        if self.is_exit_valid(x, y - 1) {
-            exits.push((idx - w, 1.0))
-        };
-        if self.is_exit_valid(x, y + 1) {
-            exits.push((idx + w, 1.0))
-        };
-        // Diagonals
-        if self.is_exit_valid(x - 1, y - 1) {
-            exits.push(((idx - w) - 1, 1.45));
+    pub fn populate_blocked(&mut self) {
+        for (i, tile) in self.tiles.iter_mut().enumerate() {
+            self.blocked[i] = *tile == TileType::Wall;
         }
-        if self.is_exit_valid(x + 1, y - 1) {
-            exits.push(((idx - w) + 1, 1.45));
+    }
+
+    pub fn clear_content_index(&mut self) {
+        for content in self.tile_content.iter_mut() {
+            content.clear();
         }
-        if self.is_exit_valid(x - 1, y + 1) {
-            exits.push(((idx + w) - 1, 1.45));
-        }
-        if self.is_exit_valid(x + 1, y + 1) {
-            exits.push(((idx + w) + 1, 1.45));
-        }
-        exits
     }
 
     /// Makes a new map using the algorithm from http://rogueliketutorials.com/tutorials/tcod/part-3/
     /// This gives a handful of random rooms and corridors joining them together.
     pub fn new_map_rooms_and_corridors() -> Map {
         let mut map = Map {
-            tiles: vec![TileType::Wall; 80 * 50],
+            tiles: vec![TileType::Wall; MAPCOUNT],
             rooms: Vec::new(),
-            width: 80,
-            height: 50,
-            revealed_tiles: vec![false; 80 * 50],
-            visible_tiles: vec![false; 80 * 50],
-            blocked: vec![false; 80 * 50],
-            tile_content: vec![Vec::new(); 80 * 50],
+            width: MAPWIDTH as i32,
+            height: MAPHEIGHT as i32,
+            revealed_tiles: vec![false; MAPCOUNT],
+            visible_tiles: vec![false; MAPCOUNT],
+            blocked: vec![false; MAPCOUNT],
+            tile_content: vec![Vec::new(); MAPCOUNT],
         };
 
         const MAX_ROOMS: i32 = 30;
@@ -127,7 +97,7 @@ impl Map {
 
         let mut rng = RandomNumberGenerator::new();
 
-        for _ in 0..MAX_ROOMS {
+        for _i in 0..MAX_ROOMS {
             let w = rng.range(MIN_SIZE, MAX_SIZE);
             let h = rng.range(MIN_SIZE, MAX_SIZE);
             let x = rng.roll_dice(1, map.width - w - 1) - 1;
@@ -166,11 +136,49 @@ impl BaseMap for Map {
     fn is_opaque(&self, idx: usize) -> bool {
         self.tiles[idx] == TileType::Wall
     }
+
     fn get_pathing_distance(&self, idx1: usize, idx2: usize) -> f32 {
         let w = self.width as usize;
         let p1 = Point::new(idx1 % w, idx1 / w);
         let p2 = Point::new(idx2 % w, idx2 / w);
         rltk::DistanceAlg::Pythagoras.distance2d(p1, p2)
+    }
+
+    fn get_available_exits(&self, idx: usize) -> rltk::SmallVec<[(usize, f32); 10]> {
+        let mut exits = rltk::SmallVec::new();
+        let x = idx as i32 % self.width;
+        let y = idx as i32 / self.width;
+        let w = self.width as usize;
+
+        // Cardinal directions
+        if self.is_exit_valid(x - 1, y) {
+            exits.push((idx - 1, 1.0))
+        };
+        if self.is_exit_valid(x + 1, y) {
+            exits.push((idx + 1, 1.0))
+        };
+        if self.is_exit_valid(x, y - 1) {
+            exits.push((idx - w, 1.0))
+        };
+        if self.is_exit_valid(x, y + 1) {
+            exits.push((idx + w, 1.0))
+        };
+
+        // Diagonals
+        if self.is_exit_valid(x - 1, y - 1) {
+            exits.push(((idx - w) - 1, 1.45));
+        }
+        if self.is_exit_valid(x + 1, y - 1) {
+            exits.push(((idx - w) + 1, 1.45));
+        }
+        if self.is_exit_valid(x - 1, y + 1) {
+            exits.push(((idx + w) - 1, 1.45));
+        }
+        if self.is_exit_valid(x + 1, y + 1) {
+            exits.push(((idx + w) + 1, 1.45));
+        }
+
+        exits
     }
 }
 
@@ -209,7 +217,7 @@ pub fn draw_map(ecs: &World, ctx: &mut Rltk) {
 
         // Move the coordinates
         x += 1;
-        if x > 79 {
+        if x > MAPWIDTH as i32 - 1 {
             x = 0;
             y += 1;
         }
