@@ -197,7 +197,7 @@ fn main() -> rltk::BError {
     gs.ecs.insert(player_entity);
     gs.ecs.insert(RunState::PreRun);
     gs.ecs.insert(gamelog::GameLog {
-        entries: vec!["Welcome to Rusty Roguelike".to_string()],
+        entries: vec!["Indra - Roguelike".to_string()],
     });
 
     rltk::main_loop(context, gs)
