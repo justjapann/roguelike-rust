@@ -1,6 +1,6 @@
 # roguelike-rust
 
-#### This project is inspirate from https://www.youtube.com/playlist?list=PLib6-zlkjfXlSssBzA-ufj2qJdEFpJYUc
+#### This project is inspired by: https://www.youtube.com/playlist?list=PLib6-zlkjfXlSssBzA-ufj2qJdEFpJYUc
 
 #### Todo
 
@@ -10,11 +10,11 @@
 - [x] Monster
 - [x] Status player/monster
 - [x] Combat
+- [x] User interface
 - [ ] Items/Inventory
 - [ ] Difficulty level
 - [ ] Weapons
 - [ ] Particle effects
-- [ ] User interface
 - [ ] Dungeons
 
 #### How to use
