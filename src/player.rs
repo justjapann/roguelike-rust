@@ -93,19 +93,19 @@ pub fn player_input(gs: &mut State, ctx: &mut Rltk) -> RunState {
     match ctx.key {
         None => return RunState::AwaitingInput, // Nothing happened
         Some(key) => match key {
-            VirtualKeyCode::A | VirtualKeyCode::Numpad4 | VirtualKeyCode::H => {
+            VirtualKeyCode::Left | VirtualKeyCode::Numpad4 | VirtualKeyCode::H => {
                 try_move_player(-1, 0, &mut gs.ecs)
             }
 
-            VirtualKeyCode::D | VirtualKeyCode::Numpad6 | VirtualKeyCode::L => {
+            VirtualKeyCode::Right | VirtualKeyCode::Numpad6 | VirtualKeyCode::L => {
                 try_move_player(1, 0, &mut gs.ecs)
             }
 
-            VirtualKeyCode::W | VirtualKeyCode::Numpad8 | VirtualKeyCode::K => {
+            VirtualKeyCode::Up | VirtualKeyCode::Numpad8 | VirtualKeyCode::K => {
                 try_move_player(0, -1, &mut gs.ecs)
             }
 
-            VirtualKeyCode::S | VirtualKeyCode::Numpad2 | VirtualKeyCode::J => {
+            VirtualKeyCode::Down | VirtualKeyCode::Numpad2 | VirtualKeyCode::J => {
                 try_move_player(0, 1, &mut gs.ecs)
             }
 
@@ -121,7 +121,7 @@ pub fn player_input(gs: &mut State, ctx: &mut Rltk) -> RunState {
             // Picking up items
             VirtualKeyCode::G => get_item(&mut gs.ecs),
             VirtualKeyCode::I => return RunState::ShowInventory,
-            VirtualKeyCode::F => return RunState::ShowDropItem,
+            VirtualKeyCode::D => return RunState::ShowDropItem,
 
             _ => return RunState::AwaitingInput,
         },
